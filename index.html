@@ -118,13 +118,13 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { getDatabase, ref, push, set, remove, onValue, off } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
-    // ================= [내 파이어베이스 정보로 연동하는 설정 구역] =================
+    // ================= [문석이의 파이어베이스 정보로 연동 설정 변경 완료] =================
     const firebaseConfig = {
-      apiKey: 'AIzaSyDO-v52Ehwphh5gW0WBzu9_DliMhOzy4Yo', // 👈 본인의 진짜 API Key를 적어주세요.
-      authDomain: 'kang-f4e85.firebaseapp.com',
-      databaseURL: 'https://kang-f4e85-default-rtdb.firebaseio.com', // 👈 Realtime DB 주소 확인
-      projectId: 'kang-f4e85',
-      storageBucket: 'kang-f4e85.firebasestorage.app',
+      apiKey: 'AIzaSyDO-v52Ehwphh5gW0WBzu9_DliMhOzy4Yo', 
+      authDomain: 'test-3c097.firebaseapp.com',
+      databaseURL: 'https://test-3c097-default-rtdb.firebaseio.com', // 👈 문석이의 Realtime DB 주소로 매핑!
+      projectId: 'test-3c097',
+      storageBucket: 'test-3c097.firebasestorage.app',
       messagingSenderId: '107057126084',
       appId: '1:107057126084:web:30f7bcb3f25dd2aa4a0791'
     };
@@ -288,7 +288,6 @@
           </div>
           <button class="delete-btn" data-id="${id}">삭제</button>
         `;
-        // 동적 엘리먼트에 삭제 기능 직접 매핑
         div.querySelector('.delete-btn').addEventListener('click', () => deleteItem(id));
         dataList.appendChild(div);
       });
@@ -325,7 +324,7 @@
 
     ttsBtn.addEventListener('click', () => {
       if (!lastAiResponse) return;
-      window.speechSynthesis.cancel(); // 실행 중인 기존 음성 음소거
+      window.speechSynthesis.cancel(); 
 
       const utterance = new SpeechSynthesisUtterance(lastAiResponse);
       const selectedVoiceName = voiceSelect.value;
@@ -333,11 +332,11 @@
         utterance.voice = voices.find(v => v.name === selectedVoiceName);
       }
       utterance.lang = 'ko-KR';
-      utterance.rate = 1.0; // 속도 비율 배수
+      utterance.rate = 1.0; 
       window.speechSynthesis.speak(utterance);
     });
 
-    // 헬퍼 단축키 및 보안 처리 함수들
+    // 헬퍼 함수들
     function escapeHTML(text) {
       return String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
     }
