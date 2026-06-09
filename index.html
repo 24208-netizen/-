@@ -70,11 +70,15 @@
       <div class="auth-box">
         <input id="emailInput" type="email" placeholder="이메일 주소" />
         <input id="passwordInput" type="password" placeholder="비밀번호 (6자리 이상)" />
+        <input id="nameInput" type="text" placeholder="이름 (예: 강문석)" />
+        <input id="idInput" type="number" placeholder="학번 (예: 30101)" />
+        <input id="ageInput" type="number" placeholder="나이 (예: 32)" />
+        
         <button class="login-btn" id="loginBtn">로그인</button>
         <button class="signup-btn" id="signupBtn">회원가입</button>
       </div>
       <div class="notice">
-        처음 사용 시 이메일과 비밀번호를 적고 [회원가입]을 눌러주세요.
+        처음 사용 시 모든 정보를 적고 [회원가입]을 눌러주세요.
       </div>
     </section>
 
@@ -118,27 +122,23 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { getDatabase, ref, push, set, remove, onValue, off } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
-    // ================= [문석이의 파이어베이스 정보로 연동 설정 변경 완료] =================
+    // Firebase 연동 설정 (제공해주신 정보 그대로 유지)
     const firebaseConfig = {
       apiKey: 'AIzaSyDO-v52Ehwphh5gW0WBzu9_DliMhOzy4Yo', 
       authDomain: 'test-3c097.firebaseapp.com',
-      databaseURL: 'https://test-3c097-default-rtdb.firebaseio.com', // 👈 문석이의 Realtime DB 주소로 매핑!
+      databaseURL: 'https://test-3c097-default-rtdb.firebaseio.com',
       projectId: 'test-3c097',
       storageBucket: 'test-3c097.firebasestorage.app',
       messagingSenderId: '107057126084',
       appId: '1:107057126084:web:30f7bcb3f25dd2aa4a0791'
     };
     
-    // Google Apps Script 웹앱 URL (ChatGPT 중계 서버)
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyTS-n6dNxhXGHxck-BL97z9l2PPrqZbl0tqjtPIP44MVFtyOiTwizk4jva8GMuV38p/exec';
-    // ==============================================================================
 
-    // 파이어베이스 시스템 시작
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const database = getDatabase(app);
 
-    // DOM 객체 가져오기
     const authSection = document.getElementById('authSection');
     const mainSection = document.getElementById('mainSection');
     const emailInput = document.getElementById('emailInput');
@@ -162,7 +162,6 @@
 
     function setStatus(msg) { statusBox.textContent = msg; }
 
-    // 1. 회원가입 및 로그인 제어인터페이스
     function getAccountInfo() {
       const email = emailInput.value.trim();
       const password = passwordInput.value.trim();
@@ -171,11 +170,26 @@
       return { email, password };
     }
 
+    // 💡 [핵심 추가 기능] 회원가입 버튼 클릭 시 데이터베이스 연동 및 저장
     signupBtn.addEventListener('click', async () => {
       const info = getAccountInfo(); if (!info) return;
+      
+      const nameVal = document.getElementById('nameInput').value.trim() || "강문석";
+      const idVal = document.getElementById('idInput').value.trim() || "30101";
+      const ageVal = document.getElementById('ageInput').value.trim() || "32";
+
       try {
+        // 1. Firebase Authentication 회원가입
         await createUserWithEmailAndPassword(auth, info.email, info.password);
-        alert('회원가입 완료! 자동 로그인됩니다.');
+        
+        // 2. 💡 첨부하신 사진과 완전히 동일한 구조로 Realtime Database에 저장
+        await set(ref(database, 'name'), nameVal);
+        await set(ref(database, 'users'), {
+          age: Number(ageVal),
+          id: Number(idVal)
+        });
+
+        alert('회원가입 완료! 데이터베이스에 정보가 사진처럼 저장되었습니다.');
       } catch (err) { alert(getKoreanErrorMessage(err.code)); }
     });
 
@@ -187,7 +201,6 @@
 
     logoutBtn.addEventListener('click', () => signOut(auth).catch(() => alert('로그아웃 실패')));
 
-    // 인증 유저 변경 리스너
     onAuthStateChanged(auth, (user) => {
       if (user) {
         currentUser = user;
@@ -204,7 +217,6 @@
       }
     });
 
-    // 2. Realtime Database 실시간 리스너 연결
     function startRealtimeListener(uid) {
       stopRealtimeListener();
       setStatus('기록 데이터를 가져오는 중...');
@@ -224,7 +236,6 @@
       dataList.innerHTML = '';
     }
 
-    // 3. ChatGPT 호출 및 데이터베이스 기록 동시 수행
     askBtn.addEventListener('click', askChatGPT);
     
     async function askChatGPT() {
@@ -238,7 +249,6 @@
         answerBox.textContent = '생성 AI 알고리즘 작동 중입니다... 잠시만 기다려주세요.';
         ttsBtn.disabled = true;
 
-        // Apps Script 통신 요청
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           body: JSON.stringify({ question: question })
@@ -249,9 +259,8 @@
         const answer = data.answer || '답변 수신 실패';
         answerBox.textContent = answer;
         lastAiResponse = answer; 
-        ttsBtn.disabled = false; // 음성 가이드 활성화
+        ttsBtn.disabled = false;
 
-        // 실시간 데이터베이스에 축적 저장
         const newItemRef = push(ref(database, `users/${currentUser.uid}/items`));
         await set(newItemRef, {
           title: question,
@@ -269,7 +278,6 @@
       }
     }
 
-    // 4. 데이터 렌더링 화면 설계 및 삭제 기능 구현
     function renderData(data) {
       dataList.innerHTML = '';
       if (!data) {
@@ -302,7 +310,6 @@
       }
     }
 
-    // 5. AI TTS 기능 구현 (Web Speech API)
     let voices = [];
     function loadVoices() {
       voices = window.speechSynthesis.getVoices();
@@ -336,7 +343,6 @@
       window.speechSynthesis.speak(utterance);
     });
 
-    // 헬퍼 함수들
     function escapeHTML(text) {
       return String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
     }
