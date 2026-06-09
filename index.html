@@ -6,7 +6,7 @@
   <title>지구 구조대 - AI 분리배출 가이드</title>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   
   <style>
     * { box-sizing: border-box; }
@@ -80,22 +80,22 @@
   <script>
     // ================= [설정 영역: 본인의 파이어베이스 키값으로 채우기] =================
     const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY", // 👈 이전 답변을 참고해서 본인의 진짜 파이어베이스 키를 넣으세요!
+      apiKey: "YOUR_FIREBASE_API_KEY", // 👈 위에 설명한 2번 과정에서 복사한 진짜 키를 여기에 넣으세요!
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com", // 👈 Realtime DB는 이 주소 한 줄이 추가로 필요합니다! 콘솔에서 확인 가능해요.
       projectId: "YOUR_PROJECT_ID",
       storageBucket: "YOUR_PROJECT_ID.appspot.com",
       messagingSenderId: "YOUR_MESSAGING_ID",
       appId: "YOUR_APP_ID"
     };
     
-    // 보내주신 OpenAI API 키를 적용했습니다.
     const OPENAI_API_KEY = "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";
     // ========================================================================
 
     // 파이어베이스 초기화
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const db = firebase.firestore();
+    const db = firebase.database(); // Realtime DB 인스턴스 생성
 
     let currentUser = null;
     let currentAiResponse = "";
@@ -122,29 +122,32 @@
 
     function logout() { auth.signOut(); }
 
+    // 🌟 변경됨: Realtime DB 읽기 전용 함수
     function loadUserData() {
       if (!currentUser) return;
       
-      db.collection("users").doc(currentUser.uid).onSnapshot((doc) => {
-        if (doc.exists) {
-          document.getElementById('user-score').innerText = doc.data().score || 0;
-        } else {
-          db.collection("users").doc(currentUser.uid).set({ score: 0 });
-        }
+      // 유저의 에코 점수 실시간 연동
+      db.ref("users/" + currentUser.uid + "/score").on("value", (snapshot) => {
+        const score = snapshot.val();
+        document.getElementById('user-score').innerText = score !== null ? score : 0;
       });
 
-      db.collection("users").doc(currentUser.uid).collection("history")
-        .orderBy("timestamp", "desc").limit(5).onSnapshot((snapshot) => {
-          const listEl = document.getElementById('history-list');
-          listEl.innerHTML = "";
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            listEl.innerHTML += `<li class="history-item"><span>🔍 ${data.item}</span><span>+10p</span></li>`;
-          });
+      // 최근 검색 기록 5개 실시간 연동
+      db.ref("users/" + currentUser.uid + "/history").limitToLast(5).on("value", (snapshot) => {
+        const listEl = document.getElementById('history-list');
+        listEl.innerHTML = "";
+        
+        const records = [];
+        snapshot.forEach((childSnapshot) => {
+          records.unshift(childSnapshot.val()); // 최신 내용이 위로 가도록 정렬
         });
+
+        records.forEach((data) => {
+          listEl.innerHTML += `<li class="history-item"><span>🔍 ${data.item}</span><span>+10p</span></li>`;
+        });
+      });
     }
 
-    // 🌟 변경됨: OpenAI API 연동 영역
     async function searchTrash() {
       const inputEl = document.getElementById('trash-input');
       const query = inputEl.value.trim();
@@ -156,7 +159,6 @@
       resultDisplay.innerText = "AI가 분리배출 방법을 분석 중입니다... 🍃";
       ttsBtn.style.display = "none";
 
-      // OpenAI Chat Completions API 엔드포인트
       const url = "https://api.openai.com/v1/chat/completions";
 
       try {
@@ -167,30 +169,22 @@
             "Authorization": `Bearer ${OPENAI_API_KEY}`
           },
           body: JSON.stringify({
-            model: "gpt-4o-mini", // 비용이 저렴하고 속도가 매우 빠른 최신 모델 사용
+            model: "gpt-4o-mini",
             messages: [
-              { 
-                role: "system", 
-                content: "너는 친절한 환경 전문가야. 유저가 입력한 쓰레기의 올바른 분리배출 방법, 버릴 때 주의할 점, 그리고 환경에 미치는 영향을 딱 3줄로 명확하게 존댓말로 요약해서 알려줘." 
-              },
-              { 
-                role: "user", 
-                content: query 
-              }
+              { role: "system", content: "너는 친절한 환경 전문가야. 유저가 입력한 쓰레기의 올바른 분리배출 방법, 버릴 때 주의할 점, 그리고 환경에 미치는 영향을 딱 3줄로 명확하게 존댓말로 요약해서 알려줘." },
+              { role: "user", content: query }
             ],
             temperature: 0.7
           })
         });
         
         const data = await response.json();
-        
-        // OpenAI의 응답 파싱 방식 적용
         currentAiResponse = data.choices[0].message.content;
         
         resultDisplay.innerText = currentAiResponse;
         ttsBtn.style.display = "block";
 
-        saveEcoAction(query);
+        saveEcoAction(query); // Realtime DB 저장 함수 호출
         inputEl.value = "";
 
       } catch (error) {
@@ -199,17 +193,20 @@
       }
     }
 
+    // 🌟 변경됨: Realtime DB 데이터 적재 함수
     function saveEcoAction(item) {
-      const userRef = db.collection("users").doc(currentUser.uid);
-      db.runTransaction(async (transaction) => {
-        const sfDoc = await transaction.get(userRef);
-        const newScore = (sfDoc.data().score || 0) + 10;
-        transaction.update(userRef, { score: newScore });
+      if (!currentUser) return;
+      const userRef = db.ref("users/" + currentUser.uid);
+      
+      // 트랜잭션을 사용하여 기존 점수에 안전하게 +10점
+      userRef.child("score").transaction((currentScore) => {
+        return (currentScore || 0) + 10;
       });
 
-      userRef.collection("history").add({
+      // 새로운 검색 기록 추가 (밀리초 단위 타임스탬프 포함)
+      userRef.child("history").push({
         item: item,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        timestamp: firebase.database.ServerValue.TIMESTAMP
       });
     }
 
