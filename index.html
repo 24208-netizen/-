@@ -9,177 +9,33 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-      font-family: Arial, sans-serif;
+      margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9); font-family: Arial, sans-serif;
     }
-
-    .app-container {
-      width: 360px;
-      padding: 24px;
-      border-radius: 24px;
-      background: #ffffff;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      text-align: center;
-      font-size: 26px;
-      color: #2e7d32;
-    }
-
-    .subtitle {
-      text-align: center;
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 20px;
-    }
-
-    /* 로그인 화면 */
-    #login-view {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      padding: 20px 0;
-    }
-
-    /* 메인 화면 (기본 숨김) */
-    #main-view {
-      display: none;
-    }
-
-    .user-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f1f8e9;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-
-    .score-box {
-      font-weight: bold;
-      color: #388e3c;
-    }
-
-    .search-box {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      height: 48px;
-      padding: 0 12px;
-      border: 2px solid #a5d6a7;
-      border-radius: 12px;
-      font-size: 16px;
-      outline: none;
-    }
-
-    input[type="text"]:focus {
-      border-color: #2e7d32;
-    }
-
-    button {
-      height: 48px;
-      padding: 0 16px;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-
-    .btn-main {
-      background: #4caf50;
-      color: white;
-    }
-
-    .btn-main:hover {
-      background: #388e3c;
-      transform: translateY(-2px);
-    }
-
-    .btn-sub {
-      background: #f5f5f5;
-      color: #333;
-      border: 1px solid #ddd;
-    }
-
-    .btn-sub:hover {
-      background: #eeeeee;
-    }
-
-    /* AI 결과창 */
-    .result-card {
-      background: #f9f9f9;
-      border-radius: 16px;
-      padding: 16px;
-      min-height: 100px;
-      margin-bottom: 16px;
-      font-size: 14px;
-      line-height: 1.6;
-      color: #333;
-      border: 1px solid #e0e0e0;
-    }
-
-    .tts-area {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 16px;
-    }
-
-    .btn-tts {
-      background: #ffb74d;
-      color: #5d4037;
-      display: none; /* 결과가 있을 때만 보임 */
-    }
-
-    /* 최근 기록 리스트 */
-    .history-section {
-      border-top: 1px solid #eee;
-      padding-top: 12px;
-    }
-
-    .history-title {
-      font-size: 14px;
-      font-weight: bold;
-      color: #555;
-      margin-bottom: 8px;
-    }
-
-    .history-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      max-height: 120px;
-      overflow-y: auto;
-      font-size: 13px;
-      color: #666;
-    }
-
-    .history-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px dashed #f0f0f0;
-    }
+    .app-container { width: 360px; padding: 24px; border-radius: 24px; background: #ffffff; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12); }
+    h1 { margin: 0 0 8px; text-align: center; font-size: 26px; color: #2e7d32; }
+    .subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
+    #login-view { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px 0; }
+    #main-view { display: none; }
+    .user-info { display: flex; justify-content: space-between; align-items: center; background: #f1f8e9; padding: 10px 14px; border-radius: 12px; font-size: 14px; margin-bottom: 16px; }
+    .score-box { font-weight: bold; color: #388e3c; }
+    .search-box { display: flex; gap: 8px; margin-bottom: 16px; }
+    input[type="text"] { flex: 1; height: 48px; padding: 0 12px; border: 2px solid #a5d6a7; border-radius: 12px; font-size: 16px; outline: none; }
+    input[type="text"]:focus { border-color: #2e7d32; }
+    button { height: 48px; padding: 0 16px; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.15s; }
+    .btn-main { background: #4caf50; color: white; }
+    .btn-main:hover { background: #388e3c; transform: translateY(-2px); }
+    .btn-sub { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+    .btn-sub:hover { background: #eeeeee; }
+    .result-card { background: #f9f9f9; border-radius: 16px; padding: 16px; min-height: 100px; margin-bottom: 16px; font-size: 14px; line-height: 1.6; color: #333; border: 1px solid #e0e0e0; }
+    .tts-area { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+    .btn-tts { background: #ffb74d; color: #5d4037; display: none; }
+    .history-section { border-top: 1px solid #eee; padding-top: 12px; }
+    .history-title { font-size: 14px; font-weight: bold; color: #555; margin-bottom: 8px; }
+    .history-list { list-style: none; padding: 0; margin: 0; max-height: 120px; overflow-y: auto; font-size: 13px; color: #666; }
+    .history-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #f0f0f0; }
   </style>
 </head>
 <body>
@@ -214,8 +70,7 @@
 
       <div class="history-section">
         <div class="history-title">나의 에코 실천 기록</div>
-        <ul class="history-list" id="history-list">
-          </ul>
+        <ul class="history-list" id="history-list"></ul>
       </div>
 
       <button class="btn-sub" style="width: 100%; margin-top: 16px;" onclick="logout()">로그아웃</button>
@@ -223,9 +78,9 @@
   </div>
 
   <script>
-    // ================= [설정 영역: 본인의 키값으로 변경 필수!] =================
+    // ================= [설정 영역: 본인의 파이어베이스 키값으로 채우기] =================
     const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
+      apiKey: "YOUR_FIREBASE_API_KEY", // 👈 이전 답변을 참고해서 본인의 진짜 파이어베이스 키를 넣으세요!
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
       projectId: "YOUR_PROJECT_ID",
       storageBucket: "YOUR_PROJECT_ID.appspot.com",
@@ -233,7 +88,8 @@
       appId: "YOUR_APP_ID"
     };
     
-    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY";
+    // 보내주신 OpenAI API 키를 적용했습니다.
+    const OPENAI_API_KEY = "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";
     // ========================================================================
 
     // 파이어베이스 초기화
@@ -244,7 +100,7 @@
     let currentUser = null;
     let currentAiResponse = "";
 
-    // 인증 상태 감지 (로그인 여부 확인)
+    // 인증 상태 감지
     auth.onAuthStateChanged((user) => {
       if (user) {
         currentUser = user;
@@ -259,22 +115,16 @@
       }
     });
 
-    // 1. Firebase Auth: 구글 로그인
     function login() {
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider).catch(err => alert("로그인 실패: " + err.message));
     }
 
-    // 로그아웃
-    function logout() {
-      auth.signOut();
-    }
+    function logout() { auth.signOut(); }
 
-    // 2. Firebase DB: 유저 데이터(점수 및 실천 내역) 가져오기
     function loadUserData() {
       if (!currentUser) return;
       
-      // 유저 점수 실시간 감지
       db.collection("users").doc(currentUser.uid).onSnapshot((doc) => {
         if (doc.exists) {
           document.getElementById('user-score').innerText = doc.data().score || 0;
@@ -283,7 +133,6 @@
         }
       });
 
-      // 유저 검색 기록 가져오기
       db.collection("users").doc(currentUser.uid).collection("history")
         .orderBy("timestamp", "desc").limit(5).onSnapshot((snapshot) => {
           const listEl = document.getElementById('history-list');
@@ -295,7 +144,7 @@
         });
     }
 
-    // 3. 생성형 AI API 연동 (Gemini API 2026 표준)
+    // 🌟 변경됨: OpenAI API 연동 영역
     async function searchTrash() {
       const inputEl = document.getElementById('trash-input');
       const query = inputEl.value.trim();
@@ -307,62 +156,70 @@
       resultDisplay.innerText = "AI가 분리배출 방법을 분석 중입니다... 🍃";
       ttsBtn.style.display = "none";
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-      
-      // 프롬프트 엔지니어링: 답변을 3줄 요약 형태로 제한하여 발표 가독성 확보
-      const prompt = `너는 친절한 환경 전문가야. '${query}'의 올바른 분리배출 방법, 버릴 때 주의할 점, 그리고 환경에 미치는 영향을 딱 3줄로 명확하게 존댓말로 요약해서 알려줘.`;
+      // OpenAI Chat Completions API 엔드포인트
+      const url = "https://api.openai.com/v1/chat/completions";
 
       try {
         const response = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini", // 비용이 저렴하고 속도가 매우 빠른 최신 모델 사용
+            messages: [
+              { 
+                role: "system", 
+                content: "너는 친절한 환경 전문가야. 유저가 입력한 쓰레기의 올바른 분리배출 방법, 버릴 때 주의할 점, 그리고 환경에 미치는 영향을 딱 3줄로 명확하게 존댓말로 요약해서 알려줘." 
+              },
+              { 
+                role: "user", 
+                content: query 
+              }
+            ],
+            temperature: 0.7
+          })
         });
         
         const data = await response.json();
-        currentAiResponse = data.candidates[0].content.parts[0].text;
         
-        // 결과 출력 및 TTS 버튼 노출
+        // OpenAI의 응답 파싱 방식 적용
+        currentAiResponse = data.choices[0].message.content;
+        
         resultDisplay.innerText = currentAiResponse;
         ttsBtn.style.display = "block";
 
-        // 4. Firebase DB: 실천 점수 업그레이드 및 로그 저장
         saveEcoAction(query);
         inputEl.value = "";
 
       } catch (error) {
-        resultDisplay.innerText = "에러가 발생했습니다. API 키를 확인해 주세요.";
+        resultDisplay.innerText = "에러가 발생했습니다. API 키나 크레딧을 확인해 주세요.";
         console.error(error);
       }
     }
 
-    // 에코 포인트 및 히스토리 저장 함수
     function saveEcoAction(item) {
       const userRef = db.collection("users").doc(currentUser.uid);
-      
-      // 트랜잭션으로 안전하게 점수 +10점 추가
       db.runTransaction(async (transaction) => {
         const sfDoc = await transaction.get(userRef);
         const newScore = (sfDoc.data().score || 0) + 10;
         transaction.update(userRef, { score: newScore });
       });
 
-      // 상세 내역 저장
       userRef.collection("history").add({
         item: item,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
     }
 
-    // 5. TTS 기능: Web Speech API 활용 (별도 라이브러리 없이 구현)
+    // TTS 기능
     function speakResult() {
       if (!currentAiResponse) return;
-      
-      // 브라우저의 말하기 기능 초기화 및 작동
-      window.speechSynthesis.cancel(); // 현재 재생 중인 음성 중지
+      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(currentAiResponse);
       utterance.lang = 'ko-KR';
-      utterance.rate = 1.0; // 속도 조절
+      utterance.rate = 1.0;
       window.speechSynthesis.speak(utterance);
     }
   </script>
